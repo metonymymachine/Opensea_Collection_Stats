@@ -1,1 +1,3 @@
-# Opensea_Collection_Stats
+# Opensea Collection Stats
+
+A dashboard to analyze Collection Data from Opensea 
