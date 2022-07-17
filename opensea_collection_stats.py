@@ -2,7 +2,6 @@ import streamlit as st
 import pandas as pd
 import requests
 import json
-from web3 import Web3
 
 st.set_page_config(
      page_title="Opensea Collection Stats",
@@ -23,9 +22,9 @@ headers = {
 }
 
 contract_address = st.text_input('Contract Address', '0x2acAb3DEa77832C09420663b0E1cB386031bA17B')
-opensea_link = st.text_input('Opensea-Link', '')
-opensea_slug = opensea_link.split('/')[-1]
-st.write(opensea_slug)
+# opensea_link = st.text_input('Opensea-Link', '')
+# opensea_slug = opensea_link.split('/')[-1]
+# st.write(opensea_slug)
 
 
 with st.spinner('Fetching Contract Info'):
@@ -46,6 +45,32 @@ with st.spinner('Getting Collection Stats'):
     stats = stats_json["stats"]
 
 rounding = 2
+
+with st.spinner('Fetching Assets Info'):
+    url_assets = "https://api.opensea.io/api/v1/assets?collection_slug=" + slug + "&order_direction=desc&limit=10&include_orders=false"
+    response_assets = requests.get(url_assets, headers=headers)
+    assets_json = json.loads(response_assets.text) #convert to dict
+    assets = assets_json["assets"]
+
+df = pd.DataFrame(
+    assets
+    # columns=['_id', 'Total chia']
+    )
+ # set index
+df = df.set_index('token_id')
+   # change order of columns
+df = df.sort_index(ascending=True)
+col1, col2, col3, col4, col5, col6, col7, col8, col9, col10 = st.columns(10)
+col1.image(assets[0]['image_thumbnail_url'])
+col2.image(assets[1]['image_thumbnail_url'])
+col3.image(assets[2]['image_thumbnail_url'])
+col4.image(assets[3]['image_thumbnail_url'])
+col5.image(assets[4]['image_thumbnail_url'])
+col6.image(assets[5]['image_thumbnail_url'])
+col7.image(assets[6]['image_thumbnail_url'])
+col8.image(assets[7]['image_thumbnail_url'])
+col9.image(assets[8]['image_thumbnail_url'])
+col10.image(assets[9]['image_thumbnail_url'])
 
 st.subheader('Collection Stats')
 
@@ -88,12 +113,6 @@ col4.metric(value=str(round(stats_json["stats"]["thirty_day_average_price"],roun
 
 
 
-with st.spinner('Fetching Assets Info'):
-    url_assets = "https://api.opensea.io/api/v1/assets?collection_slug=" + slug + "&order_direction=desc&limit=50&include_orders=false"
-    response_assets = requests.get(url_assets, headers=headers)
-    assets_json = json.loads(response_assets.text) #convert to dict
-    assets = assets_json["assets"]
-
 
 if st.checkbox('Show Contract Info JSON'):
     st.write(contract_json)
@@ -101,17 +120,10 @@ if st.checkbox('Show Stats JSON'):
     st.write(stats)
 if st.checkbox('Show Assets JSON'):
     st.write(assets)
+if st.checkbox('Show Assets Dataframe'):
+    st.dataframe(df)
 
-df = pd.DataFrame(
-    assets
-    # columns=['_id', 'Total chia']
-    )
- # set index
-df = df.set_index('token_id')
-   # change order of columns
-df = df.sort_index(ascending=False)
 
-st.dataframe(df)
 st.stop()
 
 
